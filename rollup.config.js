@@ -23,8 +23,6 @@ export default {
 			output: 'public/bundle.css',
 			sass: require("sass")
 		}),
-		typescript({
-			sourceMap: true,
-		}),
+		typescript(),
 	]
 };
