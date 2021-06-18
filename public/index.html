@@ -13,15 +13,17 @@
 		}
 	</style>
 </head>
-<body>
+<body onload="init()">
 	<!-- <h1>Museum of ancient technology</h1> -->
 	<div class="monitor-edge">
-		<pre class="monitor">
-			Tanay OS v1992 - Open source edition
-			Feel free to type "help" to know all the commands
-			Prompt><span class="blinking-cursor">█</span>
+		<pre id="video-memory" class="monitor">
 		</pre>
 	</div>
 	<script src='bundle.js'></script>
+	<script>
+		function init() {
+			computer.initializeTerminal();
+		}
+	</script>
 </body>
 </html>

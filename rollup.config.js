@@ -13,6 +13,7 @@ export default {
 	output: {
 		file: 'public/bundle.js',
 		format: 'iife', // immediately-invoked function expression — suitable for <script> tags
+		name: 'computer',
 		sourcemap: true
 	},
 	plugins: [

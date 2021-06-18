@@ -1,5 +1,22 @@
 import './reset.scss';
 
-// even though Rollup is bundling all your files together, errors and
-// logs will still point to your original source modules
-console.log('if you have sourcemaps enabled in your devtools, click on main.js:5 -->');
+
+class Computer {
+    readonly videoMemory: HTMLPreElement
+    constructor(videoMemory: HTMLPreElement) {
+        this.videoMemory = videoMemory;
+        this.videoMemory.innerHTML = `
+Tanay OS v1992 - Open source edition
+Feel free to type "help" to know all the commands
+Prompt><span class="blinking-cursor">█</span>
+hello
+        `;
+    }
+}
+
+let computerObject: Computer = null;
+
+export const initializeTerminal = () => {
+    console.log("Initializing...");
+    computerObject = new Computer(document.getElementById("video-memory") as HTMLPreElement);
+}
