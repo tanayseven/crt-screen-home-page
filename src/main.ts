@@ -1,36 +1,109 @@
 import './reset.scss';
 import { cursor, prompt } from './terminalStrings';
 
-const entityMap = new Map<string, string>(Object.entries({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    "/": '&#x2F;'
-}))
+class TextOutput {
+    text: string = ''
+    showCursor: boolean = false
+    append(text: string): void {
+        this.text += text
+    }
+    set(text: string): void {
+        this.text = text
+    }
+    trim(characters = 1): void {
+        this.text = this.text.substr(0, this.text.length - characters)
+    }
+    showTrailingCursor(): void {
+        this.showCursor = true
+    }
+    clear(): void {
+        this.text = ''
+    }
+    toString(): string {
+        return this.text + (this.showCursor ? cursor : '')
+    }
+}
 
-export function escapeHtml(source: string) {
-    return String(source).replace(/[&<>"'\/]/g, (s: string) => entityMap.get(s)!);
+class GraphicalOutput {
+
+}
+
+type Output = (output: TextOutput | GraphicalOutput) => {};
+
+interface Application {
+    sendInput(input: KeyboardEvent): void;
+    connectOutput(output: Output): void;
+    disconnectOutput(): void;
+    start(): void;
+}
+
+class Shell implements Application {
+    sendOutput: Output = (_) => null
+    output = new TextOutput()
+    consoleText: string = ''
+    constructor(initialText = '') {
+        this.output.showTrailingCursor()
+        this.output.append(initialText)
+        // this.output.append(prompt) // TODO renders the cursor badly
+    }
+    sendInput(input: KeyboardEvent): void {
+        this.consoleText += input.key
+        if (input.key === 'Enter')
+            this.output.append(`\n`)
+        else if (input.key === 'Backspace')
+            this.output.trim()
+        else
+            this.output.append(input.key)
+        this.sendOutput(this.output)
+    }
+    connectOutput(sendOutput: Output): void {
+        this.sendOutput = sendOutput;
+    }
+    disconnectOutput() {
+        this.sendOutput = (_) => null;
+    }
+    start(): void {
+        this.sendOutput(this.output)
+    }
+}
+
+const applications = {
+    "shell": Shell,
 }
 
 class Computer {
-    terminalText = [
-        `Tanay OS v1992 - Open source edition`,
-        `Feel free to type "help" to know all the commands`,
-        `${prompt}`
-    ]
-    keyboardListener = (event: KeyboardEvent) => {
-        this.terminalText[this.terminalText.length - 1] += event.key;
-    };
+    applications: Array<Application> = []
+    textOutput: string = ''
+
     constructor() {
-        document.addEventListener('keypress', this.keyboardListener);
+        this.textOutput += "Tanay OS v1992 - Open source edition\n"
+        this.textOutput += "Feel free to type <i>help</i> to know all the commands\n"
+        this.startApplication(new Shell(this.textOutput));
     }
+
+    keyEvent = (event: KeyboardEvent) => {
+        console.log(`Received the input ${event.key}`);
+        if (this.applications.length > 0) {
+            const currentApplication = this.applications[this.applications.length - 1];
+            currentApplication.sendInput(event);
+        }
+    }
+
+    startApplication = (application: Application) => {
+        if (this.applications.length > 0) {
+            const currentApplication = this.applications[this.applications.length - 1];
+            currentApplication.disconnectOutput();
+        }
+        this.applications.push(application);
+        const currentApplication = this.applications[this.applications.length - 1];
+        currentApplication.connectOutput((output: TextOutput) => this.textOutput = output.toString())
+        currentApplication.start()
+    }
+
     render(screen: HTMLPreElement) {
-        const escapedTerminalText = this.terminalText.map(e => escapeHtml(e))
-        const textToBeRendered = escapedTerminalText.join('\n') + cursor;
-        if (screen.innerHTML === textToBeRendered)
+        if (screen.innerHTML === this.textOutput)
             return;
-        console.log(screen.innerHTML + '\n' + textToBeRendered);
-        screen.innerHTML = textToBeRendered;
+        screen.innerHTML = this.textOutput;
     }
 }
 
@@ -38,8 +111,8 @@ let computerObject: Computer = null;
 
 const screen = document.getElementById("video-memory") as HTMLPreElement;
 export const initializeTerminal = () => {
-    console.log("Initializing...");
     computerObject = new Computer();
+    document.addEventListener('keydown', event => computerObject.keyEvent(event))
     setInterval((): void => {
         computerObject.render(screen);
     }, 20);
