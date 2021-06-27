@@ -77,7 +77,7 @@ class Computer {
 
     constructor() {
         this.textOutput += "Tanay OS v1992 - Open source edition\n"
-        this.textOutput += "Feel free to type <i>help</i> to know all the commands\n"
+        this.textOutput += "Feel free to type to know all the commands\n"
         this.startApplication(new Shell(this.textOutput));
     }
 
@@ -112,7 +112,13 @@ let computerObject: Computer = null;
 const screen = document.getElementById("video-memory") as HTMLPreElement;
 export const initializeTerminal = () => {
     computerObject = new Computer();
-    document.addEventListener('keydown', event => computerObject.keyEvent(event))
+    document.addEventListener('keydown', event => {
+        computerObject.keyEvent(event)
+        setTimeout(() => {
+            console.log(`Outputted something...`);
+            screen.scrollTop = screen.scrollHeight;
+        }, 40)
+    });
     setInterval((): void => {
         computerObject.render(screen);
     }, 20);

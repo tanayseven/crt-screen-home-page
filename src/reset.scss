@@ -2,24 +2,57 @@ h1 {
     color: green;
 }
 
+body {
+  display: flex;
+  background-color: #111;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.main-page {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  flex-direction: column;
+  justify-content: center;
+  align-content: center;
+}
+
+.monitor-edge {
+  display: flex;
+  justify-content: center;
+  align-self: center;
+  background-color: #3f3933;
+  width: 60vw;
+  height: 40vw;
+}
+
 @font-face {	/*Font by codeman38*/
 	font-family: "PRStark";
 	src: url(prstartk.ttf)  format("truetype");
 }
 
 .monitor {
-    background-color: rgb(9, 41, 9);
-    color: lightgreen;
-    font-size: 20px;
-    line-height: 30px;
-    font-family: PRStark, Consolas, monospace;
-    display: block;
-    position: absolute;
-    padding: 20px 20px 20px 20px;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
+  background-color: rgb(9, 41, 9);
+  color: lightgreen;
+  font-size: 20px;
+  width: 50vw;
+  height: 30vw;
+  line-height: 30px;
+  font-family: PRStark, Consolas, monospace;
+  overflow-x: hidden;
+  overflow-y: auto;
+  display: flex;
+  padding: 20px 20px 20px 20px;
+  animation: textShadow 1.6s infinite;
+}
+.main-system {
+  display: flex;
+  align-self: center;
+  background-color: #3f3933;
+  height: 30vh;
+  width: 80vw;
 }
 
 .monitor::before {
@@ -102,20 +135,20 @@ h1 {
     }
  }
 
- .monitor::after {
-    content: " ";
-    display: block;
-    position: absolute;
-    top: 0;
-    left: 0;
-    bottom: 0;
-    right: 0;
-    background: rgba(83, 83, 83, 0.1);
-    opacity: 0;
-    z-index: 2;
-    pointer-events: none;
-    animation: flicker 0.15s infinite;
- }
+//  .monitor::after {
+//     content: " ";
+//     display: block;
+//     position: absolute;
+//     top: 0;
+//     left: 0;
+//     bottom: 0;
+//     right: 0;
+//     background: rgba(83, 83, 83, 0.1);
+//     opacity: 0;
+//     z-index: 2;
+//     pointer-events: none;
+//     animation: flicker 0.15s infinite;
+//  }
 
  @keyframes textShadow {
     0% {
@@ -183,16 +216,13 @@ h1 {
     }
  }
 
- .monitor {
-    animation: textShadow 1.6s infinite;
- }
-
  .blinking-cursor {
+    display: flex;
     font-weight: 100;
     font-size: 30px;
     color: lightgreen;
+    flex-shrink: inherit;
     background-color: rgb(9, 41, 9);
-    
     animation: 1s blink step-end infinite;
  }
   

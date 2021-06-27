@@ -14,7 +14,8 @@
     "jest": "^27.0.4",
     "rollup-plugin-scss": "^2.6.1",
     "sass": "^1.34.1",
-    "snabbdom": "^3.0.2"
+    "snabbdom": "^3.0.2",
+    "typescript": "^4.3.4"
   },
   "scripts": {
     "build": "rollup -c",
