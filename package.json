@@ -6,13 +6,13 @@
     "npm-run-all": "^4.1.5",
     "rollup": "^2.36.2",
     "rollup-plugin-terser": "^7.0.2",
-    "serve": "^11.3.2"
+    "serve": "^13.0.2"
   },
   "dependencies": {
     "@rollup/plugin-typescript": "^8.2.1",
     "date-fns": "^2.16.1",
     "jest": "^27.0.4",
-    "rollup-plugin-scss": "^2.6.1",
+    "rollup-plugin-scss": "^3.0.0",
     "sass": "^1.34.1",
     "snabbdom": "^3.0.2",
     "typescript": "^4.3.4"

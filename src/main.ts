@@ -44,7 +44,7 @@ class Shell implements Application {
     constructor(initialText = '') {
         this.output.showTrailingCursor()
         this.output.append(initialText)
-        // this.output.append(prompt) // TODO renders the cursor badly
+        this.output.append(prompt) // TODO renders the cursor badly
     }
     sendInput(input: KeyboardEvent): void {
         this.consoleText += input.key
@@ -76,8 +76,8 @@ class Computer {
     textOutput: string = ''
 
     constructor() {
-        this.textOutput += "Tanay OS v1992 - Open source edition\n"
-        this.textOutput += "Feel free to type to know all the commands\n"
+        this.textOutput += "> "
+        // this.textOutput += `Feel <span class="blinking-cursor">█</span>free to type to know all the commands\n`
         this.startApplication(new Shell(this.textOutput));
     }
 
@@ -108,7 +108,6 @@ class Computer {
 }
 
 let computerObject: Computer = null;
-
 const screen = document.getElementById("video-memory") as HTMLPreElement;
 export const initializeTerminal = () => {
     computerObject = new Computer();
@@ -117,9 +116,9 @@ export const initializeTerminal = () => {
         setTimeout(() => {
             console.log(`Outputted something...`);
             screen.scrollTop = screen.scrollHeight;
-        }, 40)
+        }, 400)
     });
     setInterval((): void => {
         computerObject.render(screen);
-    }, 20);
+    }, 200);
 }

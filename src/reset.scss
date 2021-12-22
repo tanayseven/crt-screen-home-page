@@ -135,20 +135,20 @@ body {
     }
  }
 
-//  .monitor::after {
-//     content: " ";
-//     display: block;
-//     position: absolute;
-//     top: 0;
-//     left: 0;
-//     bottom: 0;
-//     right: 0;
-//     background: rgba(83, 83, 83, 0.1);
-//     opacity: 0;
-//     z-index: 2;
-//     pointer-events: none;
-//     animation: flicker 0.15s infinite;
-//  }
+ .monitor::after {
+    content: " ";
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    right: 0;
+    background: rgba(83, 83, 83, 0.1);
+    opacity: 0;
+    z-index: 2;
+    pointer-events: none;
+    animation: flicker 0.15s infinite;
+ }
 
  @keyframes textShadow {
     0% {
@@ -216,13 +216,10 @@ body {
     }
  }
 
- .blinking-cursor {
-    display: flex;
-    font-weight: 100;
-    font-size: 30px;
-    color: lightgreen;
-    flex-shrink: inherit;
+ pre .blinking-cursor {
+    color: #90ee90;
     background-color: rgb(9, 41, 9);
+    height: 10px;
     animation: 1s blink step-end infinite;
  }
   

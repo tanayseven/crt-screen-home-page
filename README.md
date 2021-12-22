@@ -1,7 +1,5 @@
 # crt-screen-home-page
 
-
-
 ## Getting started
 
 Clone this repository and install its dependencies:
