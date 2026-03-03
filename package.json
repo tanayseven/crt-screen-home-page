@@ -5,7 +5,7 @@
     "@rollup/plugin-node-resolve": "^11.1.0",
     "npm-run-all2": "^5.0.0",
     "rollup": "^2.36.2",
-    "@rollup/plugin-terser": "^0.1.0",
+    "@rollup/plugin-terser": "^0.4.0",
     "serve": "^13.0.2"
   },
   "dependencies": {
