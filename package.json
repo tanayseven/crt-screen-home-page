@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "@rollup/plugin-typescript": "^8.2.1",
-    "date-fns": "^2.16.1",
+    "date-fns": "^4.0.0",
     "jest": "^27.0.4",
     "rollup-plugin-scss": "^3.0.0",
     "sass": "^1.34.1",
