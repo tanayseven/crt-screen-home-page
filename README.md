@@ -14,4 +14,4 @@ Clone this repository and install its dependencies:
 
 ## License
 
-[MIT](LICENSE).
+[MIT](LICENSE)
