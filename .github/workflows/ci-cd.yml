@@ -30,4 +30,9 @@ jobs:
 
       - name: Deploy
         if: github.ref == 'refs/heads/main'
-        run: echo "Deploy step placeholder"
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/bundle.js public/bundle.js.map public/bundle.css
+          git diff --cached --quiet || git commit -m "chore: build artifacts [skip ci]"
+          git push origin main
