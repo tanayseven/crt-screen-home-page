@@ -1,4 +1,4 @@
-import './reset.scss';
+import './main.scss';
 import { bindKeyboard } from './keyboard';
 
 const input = document.getElementById('input') as HTMLInputElement;
