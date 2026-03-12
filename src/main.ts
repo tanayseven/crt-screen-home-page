@@ -1,4 +1,5 @@
 import './reset.scss';
+import { bindKeyboard } from './keyboard';
 
 const input = document.getElementById('input') as HTMLInputElement;
 const output = document.getElementById('output') as HTMLDivElement;
@@ -10,6 +11,20 @@ const screenContent = document.getElementById('screenContent') as HTMLDivElement
 const powerOverlay = document.getElementById('powerOverlay') as HTMLDivElement;
 let commandHistory: string[] = [];
 let isPowerOn: boolean = true;
+type TerminalMode = 'working' | 'ready-for-input';
+let terminalMode: TerminalMode = 'ready-for-input';
+
+function setMode(mode: TerminalMode): void {
+    terminalMode = mode;
+    if (mode === 'working') {
+        input.disabled = true;
+        input.style.pointerEvents = 'none';
+    } else {
+        input.disabled = false;
+        input.style.pointerEvents = '';
+        input.focus();
+    }
+}
 
 // Power button functionality
 powerButton.addEventListener('click', () => {
@@ -137,8 +152,13 @@ function executeCommand(cmd: string): void {
 
 // Function to add lines one after another
 function addLinesSequentially(lines: string[], index: number = 0): void {
+    if (index === 0 && lines.length > 0) {
+        setMode('working');
+    }
+
     if (index >= lines.length) {
         output.scrollTop = output.scrollHeight;
+        setMode('ready-for-input');
         return;
     }
 
@@ -150,7 +170,7 @@ function addLinesSequentially(lines: string[], index: number = 0): void {
     // Type text character by character
     if (lines[index].length > 0) {
         let charIndex: number = 0;
-        const typingSpeed: number = 1000 / 15; // 15 characters per second
+        const typingSpeed: number = 1000 / 120; // 120 characters per second
 
         const typeNextChar = (): void => {
             if (charIndex < lines[index].length) {
@@ -184,6 +204,7 @@ function addLine(text: string): void {
 
 input.addEventListener('keydown', (e: KeyboardEvent) => {
     if (e.key === 'Enter') {
+        if (terminalMode === 'working') return;
         const cmd: string = input.value;
         if (cmd.trim()) {
             commandHistory.push(cmd);
@@ -229,4 +250,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Add all lines sequentially with typing effect
     addLinesSequentially(initialLines);
+
+    // Bind the on-screen QWERTY keyboard (visible only in responsive/mobile mode)
+    const keyboardEl = document.getElementById('keyboard') as HTMLElement;
+    if (keyboardEl) {
+        bindKeyboard(keyboardEl, input, () => {
+            if (terminalMode === 'working') return;
+            const cmd: string = input.value;
+            if (cmd.trim()) {
+                commandHistory.push(cmd);
+                executeCommand(cmd);
+            }
+            input.value = '';
+            updateCursor();
+        });
+    }
 });
