@@ -9,6 +9,8 @@ jobs:
   ci:
     name: CI
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,12 +32,15 @@ jobs:
 
       - name: Deploy
         if: github.ref == 'refs/heads/main'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
           COMMIT_COMMENT=$(git log -1 --pretty=format:"%s")
-          git clone git@github.com:tanayseven/tanayseven.github.io.git
+          git clone https://x-access-token:${GITHUB_TOKEN}@github.com/tanayseven/tanayseven.github.io.git
           rsync -av --delete public/ tanayseven.github.io/
           cd tanayseven.github.io/
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
           git diff --cached --quiet || git commit -m "chore: build artifacts for '${COMMIT_COMMENT}' [skip ci]"
           git push origin main
