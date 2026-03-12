@@ -1,124 +1,232 @@
 import './reset.scss';
-import { cursor, prompt } from './terminalStrings';
 
-class TextOutput {
-    text: string = ''
-    showCursor: boolean = false
-    append(text: string): void {
-        this.text += text
-    }
-    set(text: string): void {
-        this.text = text
-    }
-    trim(characters = 1): void {
-        this.text = this.text.substr(0, this.text.length - characters)
-    }
-    showTrailingCursor(): void {
-        this.showCursor = true
-    }
-    clear(): void {
-        this.text = ''
-    }
-    toString(): string {
-        return this.text + (this.showCursor ? cursor : '')
-    }
-}
+const input = document.getElementById('input') as HTMLInputElement;
+const output = document.getElementById('output') as HTMLDivElement;
+const cursor = document.querySelector('.cursor') as HTMLElement;
+const powerButton = document.getElementById('powerButton') as HTMLButtonElement;
+const powerLed = document.getElementById('powerLed') as HTMLElement;
+const screenEl = document.getElementById('screen') as HTMLDivElement;
+const screenContent = document.getElementById('screenContent') as HTMLDivElement;
+const powerOverlay = document.getElementById('powerOverlay') as HTMLDivElement;
+let commandHistory: string[] = [];
+let isPowerOn: boolean = true;
 
-class GraphicalOutput {
+// Power button functionality
+powerButton.addEventListener('click', () => {
+    if (isPowerOn) {
+        // Turn off
+        screenContent.classList.add('turning-off');
+        screenContent.classList.remove('turning-on');
+        powerLed.classList.remove('on');
 
-}
-
-type Output = (output: TextOutput | GraphicalOutput) => {};
-
-interface Application {
-    sendInput(input: KeyboardEvent): void;
-    connectOutput(output: Output): void;
-    disconnectOutput(): void;
-    start(): void;
-}
-
-class Shell implements Application {
-    sendOutput: Output = (_) => null
-    output = new TextOutput()
-    consoleText: string = ''
-    constructor(initialText = '') {
-        this.output.showTrailingCursor()
-        this.output.append(initialText)
-        this.output.append(prompt) // TODO renders the cursor badly
-    }
-    sendInput(input: KeyboardEvent): void {
-        this.consoleText += input.key
-        if (input.key === 'Enter')
-            this.output.append(`\n`)
-        else if (input.key === 'Backspace')
-            this.output.trim()
-        else
-            this.output.append(input.key)
-        this.sendOutput(this.output)
-    }
-    connectOutput(sendOutput: Output): void {
-        this.sendOutput = sendOutput;
-    }
-    disconnectOutput() {
-        this.sendOutput = (_) => null;
-    }
-    start(): void {
-        this.sendOutput(this.output)
-    }
-}
-
-const applications = {
-    "shell": Shell,
-}
-
-class Computer {
-    applications: Array<Application> = []
-    textOutput: string = ''
-
-    constructor() {
-        this.textOutput += "> "
-        // this.textOutput += `Feel <span class="blinking-cursor">█</span>free to type to know all the commands\n`
-        this.startApplication(new Shell(this.textOutput));
-    }
-
-    keyEvent = (event: KeyboardEvent) => {
-        console.log(`Received the input ${event.key}`);
-        if (this.applications.length > 0) {
-            const currentApplication = this.applications[this.applications.length - 1];
-            currentApplication.sendInput(event);
-        }
-    }
-
-    startApplication = (application: Application) => {
-        if (this.applications.length > 0) {
-            const currentApplication = this.applications[this.applications.length - 1];
-            currentApplication.disconnectOutput();
-        }
-        this.applications.push(application);
-        const currentApplication = this.applications[this.applications.length - 1];
-        currentApplication.connectOutput((output: TextOutput) => this.textOutput = output.toString())
-        currentApplication.start()
-    }
-
-    render(screen: HTMLPreElement) {
-        if (screen.innerHTML === this.textOutput)
-            return;
-        screen.innerHTML = this.textOutput;
-    }
-}
-
-let computerObject: Computer = null;
-const screen = document.getElementById("video-memory") as HTMLPreElement;
-export const initializeTerminal = () => {
-    computerObject = new Computer();
-    document.addEventListener('keydown', event => {
-        computerObject.keyEvent(event)
         setTimeout(() => {
-            console.log(`Outputted something...`);
-            screen.scrollTop = screen.scrollHeight;
-        }, 400)
-    });
-    setInterval((): void => {
-        computerObject.render(screen);
-    }, 200);
+            screenContent.classList.remove('turning-off');
+            screenContent.classList.add('powered-off');
+            isPowerOn = false;
+        }, 800);
+    } else {
+        // Turn on
+        screenContent.classList.remove('powered-off');
+        screenContent.classList.add('turning-on');
+        powerLed.classList.add('on');
+
+        setTimeout(() => {
+            screenContent.classList.remove('turning-on');
+            isPowerOn = true;
+            input.focus();
+        }, 1200);
+    }
+});
+
+// Initialize power LED as on
+powerLed.classList.add('on');
+
+// Update cursor position based on input
+function updateCursor(): void {
+    const text: string = input.value;
+    const canvas: HTMLCanvasElement = document.createElement('canvas');
+    const context = canvas.getContext('2d') as CanvasRenderingContext2D;
+    context.font = getComputedStyle(input).font;
+    const width: number = context.measureText(text).width;
+    cursor.style.left = width + 'px';
 }
+
+input.addEventListener('input', updateCursor);
+input.addEventListener('click', updateCursor);
+input.addEventListener('keyup', updateCursor);
+
+type CommandHandler = (args: string[]) => string[] | null;
+
+const commands: Record<string, CommandHandler> = {
+    help: (_args: string[]): string[] => {
+        return [
+            'Available commands:',
+            '  help     - Show this help message',
+            '  clear    - Clear the screen',
+            '  time     - Display current time',
+            '  date     - Display current date',
+            '  status   - Show system status',
+            '  matrix   - Enter the Matrix',
+            '  hello    - Greeting',
+            '  echo     - Echo your message'
+        ];
+    },
+    clear: (_args: string[]): null => {
+        output.innerHTML = '';
+        return null;
+    },
+    time: (_args: string[]): string[] => {
+        return ['Current time: ' + new Date().toLocaleTimeString()];
+    },
+    date: (_args: string[]): string[] => {
+        return ['Current date: ' + new Date().toLocaleDateString()];
+    },
+    status: (_args: string[]): string[] => {
+        return [
+            'Tanay OS Status:',
+            '  Version: 0.1',
+            '  CPU: 12% | RAM: 45% | DISK: 67%',
+            '  Network: ONLINE',
+            '  Temperature: 42°C',
+            '  Uptime: 42 days, 13 hours'
+        ];
+    },
+    hello: (_args: string[]): string[] => {
+        return ['Hello, User! Welcome to Tanay OS v0.1'];
+    },
+    matrix: (_args: string[]): string[] => {
+        const chars: string = 'ｱｲｳｴｵｶｷｸｹｺｻｼｽｾｿﾀﾁﾂﾃﾄﾅﾆﾇﾈﾉﾊﾋﾌﾍﾎﾏﾐﾑﾒﾓﾔﾕﾖﾗﾘﾙﾚﾛﾜﾝ01';
+        const result: string[] = [];
+        for (let i: number = 0; i < 5; i++) {
+            let line: string = '';
+            for (let j: number = 0; j < 40; j++) {
+                line += chars[Math.floor(Math.random() * chars.length)];
+            }
+            result.push(line);
+        }
+        return result;
+    },
+    echo: (args: string[]): string[] => {
+        return [args.join(' ') || 'Echo: (nothing to echo)'];
+    }
+};
+
+function executeCommand(cmd: string): void {
+    const parts: string[] = cmd.trim().split(' ');
+    const command: string = parts[0].toLowerCase();
+    const args: string[] = parts.slice(1);
+
+    // Queue of lines to be displayed
+    const linesToAdd: string[] = ['tanay@os:~$ ' + cmd];
+
+    if (commands[command]) {
+        const result: string[] | null = commands[command](args);
+        if (result) {
+            linesToAdd.push(...result);
+        }
+    } else if (cmd.trim()) {
+        linesToAdd.push('Command not found: ' + command);
+        linesToAdd.push('Type "help" for available commands.');
+    }
+
+    linesToAdd.push('');
+
+    // Display lines sequentially
+    addLinesSequentially(linesToAdd);
+}
+
+// Function to add lines one after another
+function addLinesSequentially(lines: string[], index: number = 0): void {
+    if (index >= lines.length) {
+        output.scrollTop = output.scrollHeight;
+        return;
+    }
+
+    const line: HTMLDivElement = document.createElement('div');
+    line.className = 'line';
+    line.textContent = ''; // Start with empty text
+    output.appendChild(line);
+
+    // Type text character by character
+    if (lines[index].length > 0) {
+        let charIndex: number = 0;
+        const typingSpeed: number = 1000 / 15; // 15 characters per second
+
+        const typeNextChar = (): void => {
+            if (charIndex < lines[index].length) {
+                line.textContent += lines[index].charAt(charIndex);
+                charIndex++;
+                setTimeout(typeNextChar, typingSpeed);
+            } else {
+                // Move to the next line after this one is complete
+                setTimeout(() => {
+                    addLinesSequentially(lines, index + 1);
+                }, 100); // Small delay between lines
+            }
+        };
+
+        typeNextChar();
+    } else {
+        // Empty line, move to the next immediately
+        setTimeout(() => {
+            addLinesSequentially(lines, index + 1);
+        }, 100);
+    }
+
+    output.scrollTop = output.scrollHeight;
+}
+
+// Function to add a single line with typing effect
+function addLine(text: string): void {
+    // Use our sequential function with just one line
+    addLinesSequentially([text]);
+}
+
+input.addEventListener('keydown', (e: KeyboardEvent) => {
+    if (e.key === 'Enter') {
+        const cmd: string = input.value;
+        if (cmd.trim()) {
+            commandHistory.push(cmd);
+            executeCommand(cmd);
+        }
+        input.value = '';
+        updateCursor();
+    }
+});
+
+// Random flicker effect
+setInterval(() => {
+    if (Math.random() > 0.95 && isPowerOn) {
+        const flicker = document.querySelector('.flicker') as HTMLElement;
+        flicker.style.opacity = String(Math.random() * 0.5 + 0.5);
+        setTimeout(() => {
+            flicker.style.opacity = '1';
+        }, 50);
+    }
+}, 100);
+
+// Auto-focus input
+document.addEventListener('click', (e: MouseEvent) => {
+    if (isPowerOn && (e.target as HTMLElement).id !== 'powerButton') {
+        input.focus();
+    }
+});
+
+// Apply typing effect to initial text when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    // Clear the initial text from HTML
+    const initialLines: string[] = [];
+
+    // Store the initial lines
+    Array.from(output.querySelectorAll('.line')).forEach((line: Element) => {
+        if (line.textContent?.trim()) {
+            initialLines.push(line.textContent);
+        }
+    });
+
+    // Clear the output
+    output.innerHTML = '';
+
+    // Add all lines sequentially with typing effect
+    addLinesSequentially(initialLines);
+});

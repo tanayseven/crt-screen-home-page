@@ -22,7 +22,6 @@ export default {
 		production && terser(), // minify, but only in production
 		scss({
 			output: 'public/bundle.css',
-			sass: require("sass")
 		}),
 		typescript(),
 	]

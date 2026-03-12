@@ -33,6 +33,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/bundle.js public/bundle.js.map public/bundle.css
-          git diff --cached --quiet || git commit -m "chore: build artifacts [skip ci]"
+          COMMIT_COMMENT=$(git log -1 --pretty=format:"%s")
+          git clone git@github.com:tanayseven/tanayseven.github.io.git
+          rsync -av --delete public/ tanayseven.github.io/
+          cd tanayseven.github.io/
+          git diff --cached --quiet || git commit -m "chore: build artifacts for '${COMMIT_COMMENT}' [skip ci]"
           git push origin main
