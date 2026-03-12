@@ -9,8 +9,6 @@ jobs:
   ci:
     name: CI
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,10 +31,10 @@ jobs:
       - name: Deploy
         if: github.ref == 'refs/heads/main'
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TARGET_REPO_GITHUB_PAT: ${{ secrets.TARGET_REPO_GITHUB_PAT }}
         run: |
           COMMIT_COMMENT=$(git log -1 --pretty=format:"%s")
-          git clone https://x-access-token:${GITHUB_TOKEN}@github.com/tanayseven/tanayseven.github.io.git
+          git clone https://x-access-token:${TARGET_REPO_GITHUB_PAT}@github.com/tanayseven/tanayseven.github.io.git
           rsync -av --delete public/ tanayseven.github.io/
           cd tanayseven.github.io/
           git config user.name "github-actions[bot]"
