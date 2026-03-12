@@ -35,7 +35,7 @@ jobs:
         run: |
           COMMIT_COMMENT=$(git log -1 --pretty=format:"%s")
           git clone https://x-access-token:${TARGET_REPO_GITHUB_PAT}@github.com/tanayseven/tanayseven.github.io.git
-          rsync -av --delete public/ tanayseven.github.io/
+          rsync -av --delete --exclude='.git/' public/ tanayseven.github.io/
           cd tanayseven.github.io/
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
