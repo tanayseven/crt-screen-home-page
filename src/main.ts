@@ -11,6 +11,13 @@ const screenContent = document.getElementById('screenContent') as HTMLDivElement
 const powerOverlay = document.getElementById('powerOverlay') as HTMLDivElement;
 let commandHistory: string[] = [];
 let isPowerOn: boolean = true;
+let isShuttingDown: boolean = false;
+const bootLines: string[] = [
+    '> Tanay OS v0.1 initializing...',
+    '> Loading command processor...',
+    '> Ready for input.',
+    '> Type \'help\' for available commands.',
+];
 type TerminalMode = 'working' | 'ready-for-input';
 let terminalMode: TerminalMode = 'ready-for-input';
 
@@ -28,17 +35,29 @@ function setMode(mode: TerminalMode): void {
 
 // Power button functionality
 powerButton.addEventListener('click', () => {
-    if (isPowerOn) {
-        // Turn off
-        screenContent.classList.add('turning-off');
-        screenContent.classList.remove('turning-on');
-        powerLed.classList.remove('on');
+    if (isShuttingDown) return;
 
-        setTimeout(() => {
-            screenContent.classList.remove('turning-off');
-            screenContent.classList.add('powered-off');
-            isPowerOn = false;
-        }, 800);
+    if (isPowerOn) {
+        // Turn off - show shutdown sequence first
+        isShuttingDown = true;
+        const shutdownLines = [
+            '> Received a shutdown command',
+            '> Saving files',
+            '> Killing all the background programs',
+        ];
+        addLinesSequentially(shutdownLines, 0, () => {
+            isShuttingDown = false;
+            screenContent.classList.add('turning-off');
+            screenContent.classList.remove('turning-on');
+            powerLed.classList.remove('on');
+
+            setTimeout(() => {
+                screenContent.classList.remove('turning-off');
+                screenContent.classList.add('powered-off');
+                output.innerHTML = '';
+                isPowerOn = false;
+            }, 800);
+        });
     } else {
         // Turn on
         screenContent.classList.remove('powered-off');
@@ -48,7 +67,7 @@ powerButton.addEventListener('click', () => {
         setTimeout(() => {
             screenContent.classList.remove('turning-on');
             isPowerOn = true;
-            input.focus();
+            addLinesSequentially(bootLines);
         }, 1200);
     }
 });
@@ -151,14 +170,18 @@ function executeCommand(cmd: string): void {
 }
 
 // Function to add lines one after another
-function addLinesSequentially(lines: string[], index: number = 0): void {
+function addLinesSequentially(lines: string[], index: number = 0, onComplete?: () => void): void {
     if (index === 0 && lines.length > 0) {
         setMode('working');
     }
 
     if (index >= lines.length) {
         output.scrollTop = output.scrollHeight;
-        setMode('ready-for-input');
+        if (onComplete) {
+            onComplete();
+        } else {
+            setMode('ready-for-input');
+        }
         return;
     }
 
@@ -180,7 +203,7 @@ function addLinesSequentially(lines: string[], index: number = 0): void {
             } else {
                 // Move to the next line after this one is complete
                 setTimeout(() => {
-                    addLinesSequentially(lines, index + 1);
+                    addLinesSequentially(lines, index + 1, onComplete);
                 }, 100); // Small delay between lines
             }
         };
@@ -189,7 +212,7 @@ function addLinesSequentially(lines: string[], index: number = 0): void {
     } else {
         // Empty line, move to the next immediately
         setTimeout(() => {
-            addLinesSequentially(lines, index + 1);
+            addLinesSequentially(lines, index + 1, onComplete);
         }, 100);
     }
 
@@ -236,20 +259,10 @@ document.addEventListener('click', (e: MouseEvent) => {
 // Apply typing effect to initial text when page loads
 document.addEventListener('DOMContentLoaded', () => {
     // Clear the initial text from HTML
-    const initialLines: string[] = [];
-
-    // Store the initial lines
-    Array.from(output.querySelectorAll('.line')).forEach((line: Element) => {
-        if (line.textContent?.trim()) {
-            initialLines.push(line.textContent);
-        }
-    });
-
-    // Clear the output
     output.innerHTML = '';
 
     // Add all lines sequentially with typing effect
-    addLinesSequentially(initialLines);
+    addLinesSequentially(bootLines);
 
     // Bind the on-screen QWERTY keyboard (visible only in responsive/mobile mode)
     const keyboardEl = document.getElementById('keyboard') as HTMLElement;
