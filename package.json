@@ -1,7 +1,7 @@
 {
   "name": "tanayseven.com",
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^17.0.0",
+    "@rollup/plugin-commonjs": "^29.0.0",
     "@rollup/plugin-node-resolve": "^16.0.0",
     "npm-run-all2": "^5.0.0",
     "rollup": "^2.36.2",
