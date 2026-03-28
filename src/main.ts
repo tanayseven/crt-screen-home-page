@@ -23,12 +23,7 @@ let terminalMode: TerminalMode = 'ready-for-input';
 
 function setMode(mode: TerminalMode): void {
     terminalMode = mode;
-    if (mode === 'working') {
-        input.disabled = true;
-        input.style.pointerEvents = 'none';
-    } else {
-        input.disabled = false;
-        input.style.pointerEvents = '';
+    if (mode === 'ready-for-input') {
         input.focus();
     }
 }
@@ -199,6 +194,7 @@ function addLinesSequentially(lines: string[], index: number = 0, onComplete?: (
             if (charIndex < lines[index].length) {
                 line.textContent += lines[index].charAt(charIndex);
                 charIndex++;
+                output.scrollTop = output.scrollHeight;
                 setTimeout(typeNextChar, typingSpeed);
             } else {
                 // Move to the next line after this one is complete
