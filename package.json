@@ -6,7 +6,7 @@
     "npm-run-all2": "^5.0.0",
     "rollup": "^2.36.2",
     "@rollup/plugin-terser": "^1.0.0",
-    "serve": "^13.0.2"
+    "serve": "^14.0.0"
   },
   "dependencies": {
     "@rollup/plugin-typescript": "^12.0.0",
