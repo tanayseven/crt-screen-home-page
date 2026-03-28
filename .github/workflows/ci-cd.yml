@@ -40,5 +40,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add -A
-          git commit -m "chore: build artifacts for '${COMMIT_COMMENT}' [skip ci]"
+          git diff --cached --quiet || git commit -m "fix: build artifacts for '${COMMIT_COMMENT}' [skip ci]"
           git push origin master
