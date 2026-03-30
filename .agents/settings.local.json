@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git pull:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "Bash(git rebase:*)",
+      "Bash(gh run:*)"
+    ]
+  }
+}
