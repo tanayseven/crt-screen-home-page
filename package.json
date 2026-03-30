@@ -4,7 +4,7 @@
     "@rollup/plugin-commonjs": "^29.0.0",
     "@rollup/plugin-node-resolve": "^16.0.0",
     "npm-run-all2": "^5.0.0",
-    "rollup": "^2.36.2",
+    "rollup": "^4.0.0",
     "@rollup/plugin-terser": "^1.0.0",
     "serve": "^13.0.2"
   },
