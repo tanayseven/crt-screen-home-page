@@ -21,7 +21,7 @@ export default {
 		commonjs(), // converts date-fns to ES modules
 		production && terser(), // minify, but only in production
 		scss({
-			output: 'public/bundle.css',
+			fileName: 'bundle.css',
 		}),
 		typescript(),
 	]
