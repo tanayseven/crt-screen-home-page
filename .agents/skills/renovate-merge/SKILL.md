@@ -18,6 +18,7 @@ failing scripts, you need a repeatable loop that:
 4. Fixes any errors
 5. Pushes the fix back to the PR branch
 6. Waits for CI and then merges into `main`
+7. Marks the GitHub notification as done
 
 This skill documents the exact commands and error-handling logic for that loop.
 
@@ -101,13 +102,17 @@ for PR in $PR_NUMBERS; do
   git branch --show-current
 
   # --- 2c. Rebase the PR branch on top of latest main ---
+  # Stash any unstaged changes (e.g. from other sessions) before rebasing
+  git stash
   git fetch origin main
   if ! git rebase origin/main; then
     echo "PR #$PR has rebase conflicts — skipping (resolve manually)"
     git rebase --abort
+    git stash pop
     git checkout main
     continue
   fi
+  git stash pop
 
   # --- 2d. Install dependencies ---
   npm install
@@ -128,8 +133,16 @@ for PR in $PR_NUMBERS; do
   # ... make fixes ...
 
   # --- 2g. Commit and push fixes ---
-  git add -A
-  git commit -m "fix: resolve errors for PR #$PR" || echo "Nothing to commit"
+  # Stage only relevant changed files — never use `git add -A` as it picks up
+  # unrelated unstaged changes from other sessions.
+  #
+  # `npm install` often updates package-lock.json — always commit it if changed:
+  git diff --quiet package-lock.json || git add package-lock.json
+  #
+  # Stage any source files you actually edited to fix errors:
+  # git add src/foo.ts src/bar.ts   (be explicit)
+  #
+  git diff --cached --quiet || git commit -m "fix: resolve errors for PR #$PR"
   git push origin HEAD
 
   # --- 2h. Check CI status ---
@@ -146,9 +159,23 @@ for PR in $PR_NUMBERS; do
 
   echo "PR #$PR merged and branch deleted."
 
+  # --- 2j. Mark GitHub notification as done ---
+  REPO_FULL=$(gh repo view --json nameWithOwner --jq '.nameWithOwner')
+  THREAD_ID=$(gh api "/notifications?all=true" \
+    --jq ".[] | select(.subject.url == \"https://api.github.com/repos/$REPO_FULL/pulls/$PR\") | .id")
+  if [ -n "$THREAD_ID" ]; then
+    gh api --method DELETE "/notifications/threads/$THREAD_ID"
+    echo "PR #$PR notification marked as done."
+  else
+    echo "PR #$PR no matching notification found (may already be done)."
+  fi
+
   # Return to main and pull the merged changes before the next PR
+  # Stash any unstaged changes before switching branches and pulling
+  git stash
   git checkout main
   git pull --rebase origin main
+  git stash pop
 
 done
 
@@ -321,14 +348,20 @@ for PR in $PR_NUMBERS; do
   [ "$STATUS" != "OPEN" ] && echo "Skipping #$PR ($STATUS)" && continue
 
   gh pr checkout "$PR"
+
+  # Stash before rebase to avoid "unstaged changes" errors
+  git stash
   git fetch origin main && git rebase origin/main
+  git stash pop
 
   npm install
   npm run build
-  npm run lint --fix 2>/dev/null || npx eslint . --fix
+  npm run lint 2>/dev/null || npx eslint . --fix
   npm run test
 
-  git add -A
+  # Stage only relevant files — package-lock.json is commonly updated by npm install
+  git diff --quiet package-lock.json || git add package-lock.json
+  # git add <any source files you explicitly fixed>
   git diff --cached --quiet || git commit -m "fix: errors for PR #$PR"
   git push origin HEAD
 
@@ -336,8 +369,16 @@ for PR in $PR_NUMBERS; do
 
   gh pr merge "$PR" --rebase --delete-branch
 
+  REPO_FULL=$(gh repo view --json nameWithOwner --jq '.nameWithOwner')
+  THREAD_ID=$(gh api "/notifications?all=true" \
+    --jq ".[] | select(.subject.url == \"https://api.github.com/repos/$REPO_FULL/pulls/$PR\") | .id")
+  [ -n "$THREAD_ID" ] && gh api --method DELETE "/notifications/threads/$THREAD_ID"
+
+  # Stash before switching back to main
+  git stash
   git checkout main
   git pull --rebase origin main
+  git stash pop
 done
 ```
 
@@ -355,3 +396,5 @@ done
 | View failed CI logs | `gh run view <run-id> --log-failed` |
 | Auto-fix lint | `npx eslint . --fix && npx prettier --write .` |
 | Abort a bad rebase | `git rebase --abort` |
+| Mark notification as done | `gh api --method DELETE /notifications/threads/<thread_id>` |
+| Find notification thread for PR | `gh api "/notifications?all=true" --jq '.[] | select(.subject.url | endswith("/pulls/<PR>")) | .id'` |
