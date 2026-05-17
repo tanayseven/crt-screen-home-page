@@ -1,6 +1,7 @@
 {
   "permissions": {
     "allow": [
+      "Bash(mise install:*)",
       "Bash(git pull:*)",
       "Bash(npm install:*)",
       "Bash(npm run:*)",
