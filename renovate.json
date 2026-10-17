@@ -6,5 +6,12 @@
   "enabledManagers": [
     "mise",
     "npm"
+  ],
+  "packageRules": [
+    {
+      "description": "TypeScript 7 (native compiler) has no JS API, which @rollup/plugin-typescript requires",
+      "matchPackageNames": ["typescript"],
+      "allowedVersions": "<7"
+    }
   ]
 }
